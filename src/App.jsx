@@ -48,9 +48,11 @@ function App() {
   const [pagination, setPagination] = useState({});
   const productModalRef = useRef(null);
 
-  const getProducts = async () => {
+  const getProducts = async (page = 1) => {
     try {
-      const res = await axios.get(`${API_BASE}/api/${API_PATH}/admin/products`);
+      const res = await axios.get(
+        `${API_BASE}/api/${API_PATH}/admin/products?page=${page}`,
+      );
       setProducts(Object.values(res.data.products));
       // console.log(Object.values(res.data.products));
       setPagination(res.data.pagination);
@@ -162,6 +164,28 @@ function App() {
       closeModal();
     } catch (error) {
       console.error(error.message);
+    }
+  };
+
+  const uploadImage = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) {
+      return alert("取得檔案失敗");
+    }
+    try {
+      const formData = new FormData();
+      formData.append("file-to-upload", file);
+
+      const res = await axios.post(
+        `${API_BASE}/api/${API_PATH}/admin/upload`,
+        formData,
+      );
+      setTemplateProduct((pre) => ({
+        ...pre,
+        imageUrl: res.data.imageUrl,
+      }));
+    } catch (error) {
+      console.log(error.response);
     }
   };
 
@@ -335,7 +359,7 @@ function App() {
               )}
             </tbody>
           </table>
-          <Pagination pagination={pagination} />
+          <Pagination pagination={pagination} onChangePage={getProducts} />
           {/* ==============以下為week2 商品細圖的 code============================== */}
           {/* <div className="col-md-6"></div>
             <div className="col-md-6">
@@ -395,6 +419,7 @@ function App() {
         updateProduct={updateProduct}
         delProduct={delProduct}
         closeModal={closeModal}
+        uploadImage={uploadImage}
       />
     </>
   );
