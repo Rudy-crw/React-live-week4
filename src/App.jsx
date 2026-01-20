@@ -3,6 +3,7 @@ import axios from "axios";
 import * as bootstrap from "bootstrap";
 import "./assets/style.css";
 import ProductModal from "./components/ProductModal";
+import Pagination from "./components/Pagination";
 
 const API_BASE = import.meta.env.VITE_API_BASE;
 const API_PATH = import.meta.env.VITE_API_PATH;
@@ -38,23 +39,21 @@ function App() {
     }
     return false;
   });
-
   const [products, setProducts] = useState([]);
   // 下列為 week2 細圖需要有的 temp code
   // const [tempProduct, setTempProduct] = useState(null);
 
   const [templateProduct, setTemplateProduct] = useState(INITIAL_TEMPLATE_DATA);
   const [modalType, setModalType] = useState();
-
+  const [pagination, setPagination] = useState({});
   const productModalRef = useRef(null);
 
   const getProducts = async () => {
     try {
-      const res = await axios.get(
-        `${API_BASE}/api/${API_PATH}/admin/products/all`,
-      );
+      const res = await axios.get(`${API_BASE}/api/${API_PATH}/admin/products`);
       setProducts(Object.values(res.data.products));
       // console.log(Object.values(res.data.products));
+      setPagination(res.data.pagination);
     } catch (e) {
       console.error(e);
     }
@@ -336,7 +335,7 @@ function App() {
               )}
             </tbody>
           </table>
-
+          <Pagination pagination={pagination} />
           {/* ==============以下為week2 商品細圖的 code============================== */}
           {/* <div className="col-md-6"></div>
             <div className="col-md-6">
