@@ -1,15 +1,130 @@
-function ProductModal({
-  modalType,
-  templateProduct,
-  handleModalInputChange,
-  handleModalImageChange,
-  handleAddImage,
-  handleRemoveImage,
-  updateProduct,
-  delProduct,
-  closeModal,
-  uploadImage,
-}) {
+import { useState } from "react";
+import axios from "axios";
+import { useEffect } from "react";
+
+const API_BASE = import.meta.env.VITE_API_BASE;
+const API_PATH = import.meta.env.VITE_API_PATH;
+
+function ProductModal({ modalType, templateProduct, closeModal, getProducts }) {
+  const [tempData, setTempData] = useState(templateProduct);
+  useEffect(() => {
+    setTempData(templateProduct);
+  }, [templateProduct]);
+
+  const handleModalInputChange = (e) => {
+    const { name, value, checked, type } = e.target;
+    setTempData((prev) => ({
+      ...prev,
+      [name]: type === "checkbox" ? checked : value,
+    }));
+  };
+  const handleModalImageChange = (index, value) => {
+    setTempData((pre) => {
+      const newImage = [...pre.imagesUrl];
+      newImage[index] = value;
+
+      if (
+        value !== "" &&
+        index === newImage.length - 1 &&
+        newImage.length < 5
+      ) {
+        newImage.push("");
+      }
+      if (
+        value === "" &&
+        newImage.length > 1 &&
+        newImage[newImage.length - 1] === ""
+      ) {
+        newImage.pop();
+      }
+
+      return {
+        ...pre,
+        imagesUrl: newImage,
+      };
+    });
+  };
+  const handleAddImage = () => {
+    setTempData((pre) => {
+      const newImage = [...pre.imagesUrl];
+      newImage.push("");
+      return {
+        ...pre,
+        imagesUrl: newImage,
+      };
+    });
+  };
+  const handleRemoveImage = () => {
+    setTempData((pre) => {
+      const newImage = [...pre.imagesUrl];
+      newImage.pop();
+      return {
+        ...pre,
+        imagesUrl: newImage,
+      };
+    });
+  };
+
+  const updateProduct = async (id) => {
+    let url = `${API_BASE}/api/${API_PATH}/admin/product`;
+    let method = "post";
+
+    if (modalType === "edit") {
+      url = `${API_BASE}/api/${API_PATH}/admin/product/${id}`;
+      method = "put";
+    }
+
+    const productData = {
+      data: {
+        ...tempData,
+        origin_price: Number(tempData.origin_price),
+        price: Number(tempData.price),
+        is_enabled: tempData.is_enabled ? 1 : 0,
+        imagesUrl: [...tempData.imagesUrl.filter((url) => url !== "")],
+      },
+    };
+    try {
+      const res = await axios[method](url, productData);
+      console.log(res.data);
+      getProducts();
+      closeModal();
+    } catch (e) {
+      console.error(e.message);
+    }
+  };
+  const delProduct = async (id) => {
+    try {
+      const res = await axios.delete(
+        `${API_BASE}/api/${API_PATH}/admin/product/${id}`,
+      );
+      console.log(res.data);
+      getProducts();
+      closeModal();
+    } catch (error) {
+      console.error(error.message);
+    }
+  };
+  const uploadImage = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) {
+      return alert("取得檔案失敗");
+    }
+    try {
+      const formData = new FormData();
+      formData.append("file-to-upload", file);
+
+      const res = await axios.post(
+        `${API_BASE}/api/${API_PATH}/admin/upload`,
+        formData,
+      );
+      setTempData((pre) => ({
+        ...pre,
+        imageUrl: res.data.imageUrl,
+      }));
+    } catch (error) {
+      console.log(error.response);
+    }
+  };
   return (
     <div
       className="modal fade"
@@ -46,7 +161,7 @@ function ProductModal({
             {modalType === "delete" ? (
               <p className="fs-4">
                 確定要刪除
-                <span className="text-danger">{templateProduct.title}</span>
+                <span className="text-danger">{tempData.title}</span>
                 嗎？
               </p>
             ) : (
@@ -76,20 +191,20 @@ function ProductModal({
                         name="imageUrl"
                         className="form-control"
                         placeholder="請輸入圖片連結"
-                        value={templateProduct.imageUrl}
+                        value={tempData.imageUrl}
                         onChange={(e) => handleModalInputChange(e)}
                       />
                     </div>
-                    {templateProduct.imageUrl && (
+                    {tempData.imageUrl && (
                       <img
                         className="img-fluid"
-                        src={templateProduct.imageUrl}
+                        src={tempData.imageUrl}
                         alt="主圖"
                       />
                     )}
                   </div>
                   <div>
-                    {templateProduct.imagesUrl.map((url, index) => (
+                    {tempData.imagesUrl.map((url, index) => (
                       <div key={index}>
                         <label htmlFor="imageUrl" className="form-label">
                           輸入圖片網址
@@ -113,10 +228,9 @@ function ProductModal({
                         )}
                       </div>
                     ))}
-                    {templateProduct.imagesUrl.length < 5 &&
-                      templateProduct.imagesUrl[
-                        templateProduct.imagesUrl.length - 1
-                      ] !== "" && (
+                    {tempData.imagesUrl.length < 5 &&
+                      tempData.imagesUrl[tempData.imagesUrl.length - 1] !==
+                        "" && (
                         <button
                           className="btn btn-outline-primary btn-sm d-block w-100"
                           onClick={() => handleAddImage()}
@@ -126,7 +240,7 @@ function ProductModal({
                       )}
                   </div>
                   <div>
-                    {templateProduct.imagesUrl.length >= 1 && (
+                    {tempData.imagesUrl.length >= 1 && (
                       <button
                         className="btn btn-outline-danger btn-sm d-block w-100"
                         onClick={() => handleRemoveImage()}
@@ -147,7 +261,7 @@ function ProductModal({
                       type="text"
                       className="form-control"
                       placeholder="請輸入標題"
-                      value={templateProduct.title}
+                      value={tempData.title}
                       onChange={(e) => handleModalInputChange(e)}
                       disabled={modalType === "edit"}
                     />
@@ -164,7 +278,7 @@ function ProductModal({
                         type="text"
                         className="form-control"
                         placeholder="請輸入分類"
-                        value={templateProduct.category}
+                        value={tempData.category}
                         onChange={(e) => handleModalInputChange(e)}
                       />
                     </div>
@@ -178,7 +292,7 @@ function ProductModal({
                         type="text"
                         className="form-control"
                         placeholder="請輸入單位"
-                        value={templateProduct.unit}
+                        value={tempData.unit}
                         onChange={(e) => handleModalInputChange(e)}
                       />
                     </div>
@@ -196,7 +310,7 @@ function ProductModal({
                         min="0"
                         className="form-control"
                         placeholder="請輸入原價"
-                        value={templateProduct.origin_price}
+                        value={tempData.origin_price}
                         onChange={(e) => handleModalInputChange(e)}
                       />
                     </div>
@@ -211,7 +325,7 @@ function ProductModal({
                         min="0"
                         className="form-control"
                         placeholder="請輸入售價"
-                        value={templateProduct.price}
+                        value={tempData.price}
                         onChange={(e) => handleModalInputChange(e)}
                       />
                     </div>
@@ -227,7 +341,7 @@ function ProductModal({
                       id="description"
                       className="form-control"
                       placeholder="請輸入產品描述"
-                      value={templateProduct.description}
+                      value={tempData.description}
                       onChange={(e) => handleModalInputChange(e)}
                     ></textarea>
                   </div>
@@ -240,7 +354,7 @@ function ProductModal({
                       id="content"
                       className="form-control"
                       placeholder="請輸入說明內容"
-                      value={templateProduct.content}
+                      value={tempData.content}
                       onChange={(e) => handleModalInputChange(e)}
                     ></textarea>
                   </div>
@@ -251,13 +365,32 @@ function ProductModal({
                         id="is_enabled"
                         className="form-check-input"
                         type="checkbox"
-                        checked={templateProduct.is_enabled}
+                        checked={tempData.is_enabled}
                         onChange={(e) => handleModalInputChange(e)}
                       />
                       <label className="form-check-label" htmlFor="is_enabled">
                         是否啟用
                       </label>
                     </div>
+                  </div>
+                  {/* 新增API 沒有的屬性 */}
+                  <div className="mb-3">
+                    <label className="form-check-label" htmlFor="size">
+                      尺寸
+                    </label>
+                    <select
+                      id="size"
+                      name="size"
+                      className="form-select"
+                      aria-label="Default select example"
+                      value={tempData.size}
+                      onChange={(e) => handleModalInputChange(e)}
+                    >
+                      <option value="">請選擇</option>
+                      <option value="lg">大杯</option>
+                      <option value="md">中杯</option>
+                      <option value="sm">小杯</option>
+                    </select>
                   </div>
                 </div>
               </div>
@@ -268,7 +401,7 @@ function ProductModal({
               <button
                 type="button"
                 className="btn btn-danger"
-                onClick={() => delProduct(templateProduct.id)}
+                onClick={() => delProduct(tempData.id)}
               >
                 刪除
               </button>
@@ -285,7 +418,7 @@ function ProductModal({
                 <button
                   type="button"
                   className="btn btn-primary"
-                  onClick={() => updateProduct(templateProduct.id)}
+                  onClick={() => updateProduct(tempData.id)}
                 >
                   確認
                 </button>
