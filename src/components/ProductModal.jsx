@@ -263,7 +263,7 @@ function ProductModal({ modalType, templateProduct, closeModal, getProducts }) {
                       placeholder="請輸入標題"
                       value={tempData.title}
                       onChange={(e) => handleModalInputChange(e)}
-                      disabled={modalType === "edit"}
+                      // disabled={modalType === "edit"}
                     />
                   </div>
 
@@ -375,21 +375,24 @@ function ProductModal({ modalType, templateProduct, closeModal, getProducts }) {
                   </div>
                   {/* 新增API 沒有的屬性 */}
                   <div className="mb-3">
-                    <label className="form-check-label" htmlFor="size">
-                      尺寸
+                    <label className="form-check-label" htmlFor="style">
+                      車型
                     </label>
                     <select
-                      id="size"
-                      name="size"
+                      id="style"
+                      name="style"
                       className="form-select"
                       aria-label="Default select example"
-                      value={tempData.size}
+                      value={tempData.style}
                       onChange={(e) => handleModalInputChange(e)}
                     >
-                      <option value="">請選擇</option>
-                      <option value="lg">大杯</option>
-                      <option value="md">中杯</option>
-                      <option value="sm">小杯</option>
+                      <option value="">請選擇車型風格</option>
+                      <option value="仿賽">仿賽</option>
+                      <option value="街車">街車</option>
+                      <option value="速克達">速克達</option>
+                      <option value="多功能">多功能</option>
+                      <option value="美式">美式</option>
+                      <option value="復古">復古</option>
                     </select>
                   </div>
                 </div>

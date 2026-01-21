@@ -21,7 +21,8 @@ const INITIAL_TEMPLATE_DATA = {
   is_enabled: false,
   imageUrl: "",
   imagesUrl: [],
-  // size:"", 新增API 沒有的屬性
+  style: "",
+  //, 新增API 沒有的屬性
 };
 
 function App() {
@@ -124,6 +125,7 @@ function App() {
             <thead>
               <tr>
                 <th>品牌</th>
+                <th>車型風格</th>
                 <th>產品名稱</th>
                 <th>原價</th>
                 <th>售價</th>
@@ -136,7 +138,8 @@ function App() {
                 products.map((item) => (
                   <tr key={item.id}>
                     <td>{item.category}</td>
-                    <td scope="row">{item.title}</td>
+                    <td>{item.style}</td>
+                    <th scope="row">{item.title}</th>
                     <td>{item.origin_price}</td>
                     <td>{item.price}</td>
                     <td className={`${item.is_enabled && "text-success"}`}>
@@ -168,7 +171,9 @@ function App() {
                 ))
               ) : (
                 <tr>
-                  <td colSpan="5">尚無產品資料</td>
+                  <td colSpan="7" className="text-center">
+                    尚無產品資料
+                  </td>
                 </tr>
               )}
             </tbody>
