@@ -104,7 +104,7 @@ function ProductModal({ modalType, templateProduct, closeModal, getProducts }) {
     };
     try {
       const res = await axios[method](url, productData);
-      // console.log(res.data);
+      console.log(res.data);
       Toast.fire({
         icon: "success",
         title: `商品${method === "post" ? "新增" : "更新"}成功！`,
@@ -128,7 +128,7 @@ function ProductModal({ modalType, templateProduct, closeModal, getProducts }) {
       const res = await axios.delete(
         `${API_BASE}/api/${API_PATH}/admin/product/${id}`,
       );
-      // console.log(res.data);
+      console.log(res.data);
       Toast.fire({
         icon: "success",
         title: "商品已成功刪除",
@@ -174,7 +174,7 @@ function ProductModal({ modalType, templateProduct, closeModal, getProducts }) {
         title: "圖片上傳成功",
       });
     } catch (error) {
-      // console.log(error.response);
+      console.log(error.response);
       Toast.fire({
         icon: "error",
         title: "圖片上傳失敗",
